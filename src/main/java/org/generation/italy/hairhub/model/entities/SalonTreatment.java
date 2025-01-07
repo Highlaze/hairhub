@@ -7,35 +7,42 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "salon_services")
 @Check(constraints = "price > 0")
-@IdClass(SalonTreatmentId.class)
+
 public class SalonTreatment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long id;
+
     @ManyToOne
     @JoinColumn(name = "sal_id", nullable = false)
     private Salon salon;
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "serv_id", nullable = false)
     private Treatment treatment;
 
-    private BigDecimal price;
+    private double price;
 
     public SalonTreatment(){}
 
-    public SalonTreatment(Salon salon, Treatment treatment, BigDecimal price) {
+    public SalonTreatment(Long id,Salon salon, Treatment treatment, double price) {
+        this.id = id;
         this.salon = salon;
         this.treatment = treatment;
         this.price = price;
     }
 
+    public long getId() {
+        return id;
+    }
     public Salon getSalon() {
         return salon;
     }
     public Treatment getTreatment() {
         return treatment;
     }
-    public BigDecimal getPrice() {
+    public double getPrice() {
         return price;
     }
 
@@ -45,8 +52,11 @@ public class SalonTreatment {
     public void setTreatment(Treatment treatment) {
         this.treatment = treatment;
     }
-    public void setPrice(BigDecimal price) {
+    public void setPrice(double price) {
         this.price = price;
+    }
+    public void setId(long id) {
+        this.id = id;
     }
 }
 

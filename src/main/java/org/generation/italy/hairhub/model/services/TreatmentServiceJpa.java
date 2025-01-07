@@ -19,15 +19,5 @@ public class TreatmentServiceJpa implements TreatmentService{
         this.treatRepo = treatRepo;
         this.salonTreatRepo = salonTreatRepo;
     }
-    @Override
-    public List<TreatmentWithPrice> getTreatmentBySalon(long salonId) {
-        List<Treatment> allTreatment = treatRepo.findBySalonTreatmentsSalonId(salonId);
-        List<TreatmentWithPrice> treatsWPrice = new ArrayList<>();
-        for (Treatment treatment : allTreatment) {
-            BigDecimal price = salonTreatRepo.getPriceBySalonIdAndTreatmentId(salonId, treatment.getId());
-            TreatmentWithPrice treatWPrice = new TreatmentWithPrice(treatment, price);
-            treatsWPrice.add(treatWPrice);
-        }
-        return treatsWPrice;
-    }
+
 }

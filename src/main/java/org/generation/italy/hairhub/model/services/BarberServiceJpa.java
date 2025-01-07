@@ -16,8 +16,5 @@ public class BarberServiceJpa implements BarberService{
         this.barberRepo = barberRepo;
     }
 
-    @Override
-    public List<Barber> getAllBarbersBySalonId(long salonId) {
-        return barberRepo.getBarbersBySalonId(salonId);
-    }
+
 }

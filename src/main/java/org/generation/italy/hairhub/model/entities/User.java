@@ -1,18 +1,23 @@
 package org.generation.italy.hairhub.model.entities;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "us_id")
-    private long id;
+    private Long id;
 
     private String firstname;
 
@@ -29,13 +34,15 @@ public class User {
     private String pass;
 
     private String phone;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
 
     // Getters and Setters
 
     public User(){}
 
-    public User(long id, String firstname, String lastname, String nickname, LocalDate dob, String sex, String mail, String pass, String phone) {
+    public User(Long id, String firstname, String lastname, String nickname, LocalDate dob, String sex, String mail, String pass, String phone,Role role) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -45,9 +52,54 @@ public class User {
         this.mail = mail;
         this.pass = pass;
         this.phone = phone;
+        this.role = role;
     }
 
-    public long getId() {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+
+    @Override
+    public String getPassword() {
+        return pass;
+    }
+
+    @Override
+    public String getUsername() {
+        return mail;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Long getId() {
         return id;
     }
     public String getFirstname() {
@@ -75,7 +127,7 @@ public class User {
         return nickname;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
     public void setFirstname(String firstname) {

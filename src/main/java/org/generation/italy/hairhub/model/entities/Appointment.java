@@ -5,6 +5,8 @@ import org.hibernate.annotations.Check;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "appointments")
@@ -24,9 +26,15 @@ public class Appointment {
     @JoinColumn(name = "barb_id", nullable = false)
     private Barber barber;
 
-    @ManyToOne
-    @JoinColumn(name = "serv_id", nullable = false)
-    private Treatment treatment;
+    @ManyToMany
+    @JoinTable(
+            name = "appointment_services",
+            joinColumns = @JoinColumn(name = "app_id"),
+            inverseJoinColumns = @JoinColumn(name = "serv_id")
+    )
+    private List<Treatment> treatments = new ArrayList<>();
+
+
 
     private LocalDate date;
 
@@ -42,11 +50,11 @@ public class Appointment {
 
     public Appointment(){}
 
-    public Appointment(long id, User user, Barber barber, Treatment treatment, LocalDate date, LocalTime startTime, LocalTime endTime, String status) {
+    public Appointment(long id, User user, Barber barber, List<Treatment> treatments, LocalDate date, LocalTime startTime, LocalTime endTime, String status) {
         this.id = id;
         this.user = user;
         this.barber = barber;
-        this.treatment = treatment;
+        this.treatments = treatments;
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -62,8 +70,8 @@ public class Appointment {
     public Barber getBarber() {
         return barber;
     }
-    public Treatment getTreatment() {
-        return treatment;
+    public List<Treatment> getTreatments() {
+        return treatments;
     }
     public LocalDate getDate() {
         return date;
@@ -87,8 +95,8 @@ public class Appointment {
     public void setBarber(Barber barber) {
         this.barber = barber;
     }
-    public void setTreatment(Treatment treatment) {
-        this.treatment = treatment;
+    public void setTreatments(List<Treatment> treatments) {
+        this.treatments = treatments;
     }
     public void setDate(LocalDate date) {
         this.date = date;
@@ -102,4 +110,6 @@ public class Appointment {
     public void setStatus(String status) {
         this.status = status;
     }
+
+
 }

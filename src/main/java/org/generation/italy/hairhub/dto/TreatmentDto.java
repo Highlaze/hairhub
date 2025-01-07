@@ -12,10 +12,10 @@ public class TreatmentDto {
     private String description;
     private String imgUrl;
     private int type; //1 = taglio capelli, 2 = barba
-    private BigDecimal price;
+    private double price;
 
     public TreatmentDto(){}
-    public TreatmentDto(long id, String name, String description, String imgUrl, int type, BigDecimal price) {
+    public TreatmentDto(long id, String name, String description, String imgUrl, int type, double price) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -48,7 +48,7 @@ public class TreatmentDto {
     public int getType() {
         return type;
     }
-    public BigDecimal getPrice() {
+    public double getPrice() {
         return price;
     }
 
@@ -67,7 +67,7 @@ public class TreatmentDto {
     public void setType(int type) {
         this.type = type;
     }
-    public void setPrice(BigDecimal price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 }

@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BarberRepositoryJpa extends JpaRepository<Barber, Long> {
-    List<Barber> getBarbersBySalonId(long salonId);
 
 }

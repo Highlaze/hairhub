@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.processing.CheckHQL;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,6 +26,10 @@ public class Treatment {
 
     private int type; //1 = taglio capelli, 2 = barba
 
+    @ManyToMany(mappedBy = "treatments")
+    private List<Appointment> appointments = new ArrayList<>();
+
+
     @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SalonTreatment> salonTreatments;
 
@@ -32,13 +37,14 @@ public class Treatment {
 
     public Treatment(){}
 
-    public Treatment(long id, String name, String description, String imgUrl, int type, List<SalonTreatment> salonTreatments) {
+    public Treatment(long id, String name, String description, String imgUrl, int type, List<SalonTreatment> salonTreatments,List<Appointment> appointments) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.imgUrl = imgUrl;
         this.type = type;
         this.salonTreatments = salonTreatments;
+        this.appointments = appointments;
     }
 
     public long getId() {
@@ -56,6 +62,15 @@ public class Treatment {
     public int getType() {
         return type;
     }
+
+    public List<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void setAppointments(List<Appointment> appointments) {
+        this.appointments = appointments;
+    }
+
     public List<SalonTreatment> getSalonTreatments() {
         return salonTreatments;
     }

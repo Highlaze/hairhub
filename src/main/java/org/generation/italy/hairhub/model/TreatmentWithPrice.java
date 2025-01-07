@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 
 public class TreatmentWithPrice {
     private Treatment treatment;
-    private BigDecimal price;
+    private double price;
 
     public TreatmentWithPrice(){}
-    public TreatmentWithPrice(Treatment treatment, BigDecimal price) {
+    public TreatmentWithPrice(Treatment treatment, double price) {
         this.treatment = treatment;
         this.price = price;
     }
@@ -17,14 +17,14 @@ public class TreatmentWithPrice {
     public Treatment getTreatment() {
         return treatment;
     }
-    public BigDecimal getPrice() {
+    public double getPrice() {
         return price;
     }
 
     public void setTreatment(Treatment treatment) {
         this.treatment = treatment;
     }
-    public void setPrice(BigDecimal price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 }
