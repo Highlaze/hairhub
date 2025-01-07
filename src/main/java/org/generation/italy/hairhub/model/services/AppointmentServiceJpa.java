@@ -1,5 +1,6 @@
 package org.generation.italy.hairhub.model.services;
 
+import org.generation.italy.hairhub.dto.AppointmentDto;
 import org.generation.italy.hairhub.model.entities.Appointment;
 import org.generation.italy.hairhub.model.entities.Barber;
 import org.generation.italy.hairhub.model.entities.Treatment;
@@ -12,7 +13,10 @@ import org.generation.italy.hairhub.model.repositories.UserRepositoryJpa;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentServiceJpa implements AppointmentService {
@@ -61,5 +65,15 @@ public class AppointmentServiceJpa implements AppointmentService {
         app.setStatus("Confirmed");
         appRepo.save(app); //salva l'appuntamento sul db tramite il repository(il repository è quello che comunica col db)
         return app;
+    }
+
+    @Override
+    public List<AppointmentDto> getFuturAppointmentByUserId(long userId, LocalDate CurrentDate) {
+        return appRepo.findFutureAppointmentsByUserId(userId, LocalDate.now()).stream().map(AppointmentDto::fromAppointment).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AppointmentDto> getPastAppointmentByUserId(long userId, LocalDate CurrentDate) {
+        return appRepo.findPastAppointmentsByUserId(userId, LocalDate.now()).stream().map(AppointmentDto::fromAppointment).collect(Collectors.toList());
     }
 }
