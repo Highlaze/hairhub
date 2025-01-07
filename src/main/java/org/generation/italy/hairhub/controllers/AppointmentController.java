@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -75,5 +76,19 @@ public class AppointmentController {
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(e.getFullMessage(), HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/future/{userId}")
+    public ResponseEntity<List<AppointmentDto>> getFutureAppointmentsByUserId(@PathVariable long userId) {
+        List<AppointmentWithPrices> appointmentsP = appointmentService.getFutureAppointmentsByUserId(userId);
+        List<AppointmentDto> appointmentDtos = appointmentsP.stream().map(AppointmentDto::fromAppointmentWithPrice).toList();
+        return ResponseEntity.ok(appointmentDtos);
+    }
+
+    @GetMapping("/past/{userId}")
+    public ResponseEntity<List<AppointmentDto>> getPastAppointmentsByUserId(@PathVariable long userId) {
+        List<AppointmentWithPrices> appointmentsP = appointmentService.getPastAppointmentsByUserId(userId);
+        List<AppointmentDto> appointmentDtos = appointmentsP.stream().map(AppointmentDto::fromAppointmentWithPrice).toList();
+        return ResponseEntity.ok(appointmentDtos);
     }
 }

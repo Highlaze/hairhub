@@ -1,5 +1,10 @@
 package org.generation.italy.hairhub.model.services;
 
+import org.generation.italy.hairhub.dto.AppointmentDto;
+import org.generation.italy.hairhub.model.entities.Appointment;
+import org.generation.italy.hairhub.model.entities.Barber;
+import org.generation.italy.hairhub.model.entities.Treatment;
+import org.generation.italy.hairhub.model.entities.User;
 import org.generation.italy.hairhub.model.AppointmentWithPrices;
 import org.generation.italy.hairhub.model.TreatmentWithPrice;
 import org.generation.italy.hairhub.model.entities.*;
@@ -8,6 +13,10 @@ import org.generation.italy.hairhub.model.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -155,5 +164,54 @@ public class AppointmentServiceJpa implements AppointmentService {
        }
        return availableTimes;
     }
-}
 
+    @Override
+    public List<AppointmentWithPrices> getFutureAppointmentsByUserId(long userId) {
+        List<Appointment> appointments = appRepo.findFutureAppointmentsByUserId(userId, LocalDate.now());
+        List<TreatmentWithPrice> treatmentsPrice = new ArrayList<>();
+        List<AppointmentWithPrices> appointmentsPrice = new ArrayList<>();
+        for(Appointment appointment : appointments) {
+            List<Treatment> treatments = appointment.getTreatments();
+            for (Treatment t : treatments) {
+                double price = salonTreatRepo.getPriceBySalonIdAndTreatmentId(appointment.getBarber().getSalon().getId(), t.getId());
+                treatmentsPrice.add(new TreatmentWithPrice(t, price));
+            }
+            appointmentsPrice.add(new AppointmentWithPrices(
+                    appointment.getId(),
+                    appointment.getUser(),
+                    appointment.getBarber(),
+                    treatmentsPrice,
+                    appointment.getDate(),
+                    appointment.getStartTime(),
+                    appointment.getEndTime(),
+                    appointment.getStatus()
+            ));
+        }
+        return appointmentsPrice;
+    }
+
+    @Override
+    public List<AppointmentWithPrices> getPastAppointmentsByUserId(long userId) {
+        List<Appointment> appointments = appRepo.findPastAppointmentsByUserId(userId, LocalDate.now());
+        List<TreatmentWithPrice> treatmentsPrice = new ArrayList<>();
+        List<AppointmentWithPrices> appointmentsPrice = new ArrayList<>();
+        for(Appointment appointment : appointments) {
+            List<Treatment> treatments = appointment.getTreatments();
+            for (Treatment t : treatments) {
+                double price = salonTreatRepo.getPriceBySalonIdAndTreatmentId(appointment.getBarber().getSalon().getId(), t.getId());
+                treatmentsPrice.add(new TreatmentWithPrice(t, price));
+            }
+            appointmentsPrice.add(new AppointmentWithPrices(
+                    appointment.getId(),
+                    appointment.getUser(),
+                    appointment.getBarber(),
+                    treatmentsPrice,
+                    appointment.getDate(),
+                    appointment.getStartTime(),
+                    appointment.getEndTime(),
+                    appointment.getStatus()
+            ));
+        }
+        return appointmentsPrice;
+    }
+}
