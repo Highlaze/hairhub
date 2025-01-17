@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface TreatmentRepositoryJpa extends JpaRepository<Treatment, Long> {
 
-    List<Treatment> findAll();
 }

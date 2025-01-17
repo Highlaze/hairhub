@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface SalonService {
     List<Salon> getTopSalons(Integer type, int num);
-    List<Salon> getSalonsByNameOrAddress(String name);
+    List<Salon> getSalonsByName(String name);
     Optional<Salon> getSalonById(long id);
     List<Salon> getSalonsByTreatmentId(long treatmentId);
     List<TreatmentWithPrice> getTreatmentBySalon(long salonId);

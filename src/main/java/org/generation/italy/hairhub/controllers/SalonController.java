@@ -38,7 +38,7 @@ public class SalonController {
 
     @GetMapping
     public ResponseEntity<List<SalonDto>> searchSalons(@RequestParam(required = false) String name) {
-        List<Salon> salons = salonService.getSalonsByNameOrAddress(name);
+        List<Salon> salons = salonService.getSalonsByName(name);
         return ResponseEntity.ok(SalonDto.fromSalons(salons));
     }
 

@@ -1,16 +1,15 @@
 package org.generation.italy.hairhub.dto;
 
 import org.generation.italy.hairhub.model.AppointmentWithPrices;
-import org.generation.italy.hairhub.model.TreatmentWithPrice;
 import org.generation.italy.hairhub.model.entities.Appointment;
-import org.generation.italy.hairhub.model.entities.Barber;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
-public class AppointmentDto {
+public class CreateAppointmentDto {
     private long id;
     private String userName;
     private long userId;
@@ -20,11 +19,11 @@ public class AppointmentDto {
     private String startTime;
     private String endTime;
     private String status;
-    private List<TreatmentDto> treatments;
+    private List<Long> treatments;
 
 
-    public AppointmentDto(){}
-    public AppointmentDto(long id, long userId, long barberId, String barberName, String date, String startTime, String endTime, String status,List<TreatmentDto> treatments) {
+    public CreateAppointmentDto(){}
+    public CreateAppointmentDto(long id, long userId, long barberId, String barberName, String date, String startTime, String endTime, String status,List<Long> treatments) {
         this.id = id;
         this.userId = userId;
         this.barberId = barberId;
@@ -36,26 +35,19 @@ public class AppointmentDto {
         this.treatments = treatments;
     }
 
-    public Appointment toAppointment() { //restituisce un appointment da un dto
+    public Appointment toAppointment() {
+        LocalDate parsedDate = LocalDate.parse(this.date);
+        LocalTime parsedStartTime = LocalTime.parse(this.startTime);
+        LocalTime parsedEndTime = LocalTime.parse(this.endTime);
+
         Appointment appointment = new Appointment();
         appointment.setId(this.id);
-        appointment.setDate(LocalDate.parse(this.date));
-        appointment.setStartTime(LocalTime.parse(this.startTime));
-        appointment.setEndTime(LocalTime.parse(this.endTime));
+        appointment.setDate(parsedDate);
+        appointment.setStartTime(parsedStartTime);
+        appointment.setEndTime(parsedEndTime);
         appointment.setStatus(this.status);
 
         return appointment;
-    }
-
-
-
-    public static AppointmentDto fromAppointmentWithPrice(AppointmentWithPrices app) { //restituire appdto da appointmentWithPrices dato in input
-        return new AppointmentDto(app.getId(),app.getUser().getId(), app.getBarber().getId(),
-                String.format("%s %s", app.getBarber().getFirstname(), app.getBarber().getLastname()),
-                app.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
-                app.getStartTime().format(DateTimeFormatter.ISO_LOCAL_TIME),
-                app.getEndTime().format(DateTimeFormatter.ISO_LOCAL_TIME),
-                app.getStatus(), app.getTreatments().stream().map(TreatmentDto::new).toList());
     }
 
     public long getId() {
@@ -86,12 +78,11 @@ public class AppointmentDto {
         return status;
     }
 
-
-    public List<TreatmentDto> getTreatments() {
+    public List<Long> getTreatments() {
         return treatments;
     }
 
-    public void setTreatments(List<TreatmentDto> treatments) {
+    public void setTreatments(List<Long> treatments) {
         this.treatments = treatments;
     }
 

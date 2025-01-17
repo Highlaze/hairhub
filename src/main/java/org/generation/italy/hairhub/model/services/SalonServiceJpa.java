@@ -10,7 +10,6 @@ import org.generation.italy.hairhub.model.repositories.TreatmentRepositoryJpa;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +36,8 @@ public class SalonServiceJpa implements SalonService {
 
 
     @Override
-    public List<Salon> getSalonsByNameOrAddress(String name) {
-        return salonRepo.searchByNameOrAddress(name);
+    public List<Salon> getSalonsByName(String name) {
+        return salonRepo.searchByName(name);
     }
 
     @Override

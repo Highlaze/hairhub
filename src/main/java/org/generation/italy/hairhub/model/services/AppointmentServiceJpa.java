@@ -1,6 +1,7 @@
 package org.generation.italy.hairhub.model.services;
 
 import org.generation.italy.hairhub.dto.AppointmentDto;
+import org.generation.italy.hairhub.model.AppointmentReviewInfo;
 import org.generation.italy.hairhub.model.entities.Appointment;
 import org.generation.italy.hairhub.model.entities.Barber;
 import org.generation.italy.hairhub.model.entities.Treatment;
@@ -13,14 +14,13 @@ import org.generation.italy.hairhub.model.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -32,15 +32,19 @@ public class AppointmentServiceJpa implements AppointmentService {
     private UserRepositoryJpa userRepo;
     private SalonTreatmentRepositoryJpa salonTreatRepo;
     private SalonRepositoryJpa salonRepo;
+    private ReviewRepositoryJpa reviewRepo;
 
     @Autowired
-    public AppointmentServiceJpa(AppointmentRepositoryJpa appRepo, BarberRepositoryJpa barberRepo, TreatmentRepositoryJpa treatRepo, UserRepositoryJpa userRepo, SalonTreatmentRepositoryJpa salonTreatRepo) {
+    public AppointmentServiceJpa(AppointmentRepositoryJpa appRepo, BarberRepositoryJpa barberRepo, TreatmentRepositoryJpa treatRepo, UserRepositoryJpa userRepo, SalonTreatmentRepositoryJpa salonTreatRepo, SalonRepositoryJpa salonRepo, ReviewRepositoryJpa reviewRepo) {
         this.appRepo = appRepo;
         this.barberRepo = barberRepo;
         this.treatRepo = treatRepo;
         this.userRepo = userRepo;
         this.salonTreatRepo = salonTreatRepo;
+        this.salonRepo = salonRepo;
+        this.reviewRepo = reviewRepo;
     }
+
 
     @Override
     public Optional<Appointment> update(long id) {
@@ -105,7 +109,7 @@ public class AppointmentServiceJpa implements AppointmentService {
         Salon salon = barber.getSalon();
         LocalTime openingTime = salon.getOpeningTime();
         LocalTime closingTime = salon.getClosingTime();
-        List<LocalTime> availableTimes = generateAvailableTimes(openingTime,closingTime,appointments,numberOfTreatments);
+        List<LocalTime> availableTimes = generateAvailableTimes(openingTime,closingTime,appointments,numberOfTreatments,date);
         return availableTimes;
     }
 
@@ -145,13 +149,23 @@ public class AppointmentServiceJpa implements AppointmentService {
         }
 
     @Override
-    public List<LocalTime> generateAvailableTimes(LocalTime openingTime, LocalTime closingTime, List<Appointment> appointments, int numberOfTreatments) {
+    public List<LocalTime> generateAvailableTimes(LocalTime openingTime, LocalTime closingTime, List<Appointment> appointments, int numberOfTreatments, LocalDate selectedDate) {
         Duration duration = Duration.ofMinutes(numberOfTreatments * 30);
        List<LocalTime> availableTimes = new ArrayList<>();
        LocalTime slot = openingTime;
+       LocalTime now = LocalTime.now();
+
+        if (selectedDate.equals(LocalDate.now()) && now.isAfter(openingTime)) {
+            slot = now.withMinute((now.getMinute() / 30) * 30).plusMinutes(30);
+            if (slot.isBefore(now)) {
+                slot = slot.plusMinutes(30);  // Se siamo in un minuto esatto come 11:30, dobbiamo passare al successivo
+            }
+        }
+
        while (!slot.plus(duration).isAfter(closingTime)){
            boolean isSlotTaken= false;
            for(Appointment appointment: appointments){
+
                if(slot.isBefore(appointment.getEndTime()) && slot.plus(duration).isAfter(appointment.getStartTime())){
                    isSlotTaken = true;
                    break;
@@ -167,10 +181,10 @@ public class AppointmentServiceJpa implements AppointmentService {
 
     @Override
     public List<AppointmentWithPrices> getFutureAppointmentsByUserId(long userId) {
-        List<Appointment> appointments = appRepo.findFutureAppointmentsByUserId(userId, LocalDate.now());
-        List<TreatmentWithPrice> treatmentsPrice = new ArrayList<>();
+        List<Appointment> appointments = appRepo.findFutureAppointmentsByUserId(userId, LocalDate.now(), LocalTime.now());
         List<AppointmentWithPrices> appointmentsPrice = new ArrayList<>();
         for(Appointment appointment : appointments) {
+            List<TreatmentWithPrice> treatmentsPrice = new ArrayList<>();
             List<Treatment> treatments = appointment.getTreatments();
             for (Treatment t : treatments) {
                 double price = salonTreatRepo.getPriceBySalonIdAndTreatmentId(appointment.getBarber().getSalon().getId(), t.getId());
@@ -191,27 +205,35 @@ public class AppointmentServiceJpa implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentWithPrices> getPastAppointmentsByUserId(long userId) {
-        List<Appointment> appointments = appRepo.findPastAppointmentsByUserId(userId, LocalDate.now());
-        List<TreatmentWithPrice> treatmentsPrice = new ArrayList<>();
-        List<AppointmentWithPrices> appointmentsPrice = new ArrayList<>();
+    public List<AppointmentReviewInfo> getPastAppointmentsByUserId(long userId) {
+        List<Appointment> appointments = appRepo.findPastAppointmentsByUserId(userId, LocalDate.now(), LocalTime.now());
+        List<AppointmentReviewInfo> appointmentsRevInfo = new ArrayList<>();
+
         for(Appointment appointment : appointments) {
+            List<TreatmentWithPrice> treatmentsPrice = new ArrayList<>();
             List<Treatment> treatments = appointment.getTreatments();
             for (Treatment t : treatments) {
                 double price = salonTreatRepo.getPriceBySalonIdAndTreatmentId(appointment.getBarber().getSalon().getId(), t.getId());
                 treatmentsPrice.add(new TreatmentWithPrice(t, price));
             }
-            appointmentsPrice.add(new AppointmentWithPrices(
-                    appointment.getId(),
-                    appointment.getUser(),
-                    appointment.getBarber(),
-                    treatmentsPrice,
-                    appointment.getDate(),
-                    appointment.getStartTime(),
-                    appointment.getEndTime(),
-                    appointment.getStatus()
+
+            boolean canReview = !"Cancelled".equals(appointment.getStatus()) &&
+                    reviewRepo.findByAppointmentId(appointment.getId()).isEmpty();
+
+            appointmentsRevInfo.add(new AppointmentReviewInfo(
+                    new AppointmentWithPrices(
+                            appointment.getId(),
+                            appointment.getUser(),
+                            appointment.getBarber(),
+                            treatmentsPrice,
+                            appointment.getDate(),
+                            appointment.getStartTime(),
+                            appointment.getEndTime(),
+                            appointment.getStatus()
+                    ),
+                    canReview
             ));
         }
-        return appointmentsPrice;
+        return appointmentsRevInfo;
     }
 }

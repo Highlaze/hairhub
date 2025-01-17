@@ -2,7 +2,6 @@ package org.generation.italy.hairhub.model.repositories;
 
 import org.generation.italy.hairhub.model.entities.Barber;
 import org.generation.italy.hairhub.model.entities.Salon;
-import org.generation.italy.hairhub.model.entities.Treatment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,18 +29,15 @@ public interface SalonRepositoryJpa extends JpaRepository<Salon, Long> {
     List<Salon> getSalonsByOptionalServiceType(@Param("type") Integer type, @Param("num") int num);
 
 
-    // l'indirizzo non serve più???????????????????????????????????????
     @Query("""
                 SELECT s
                 FROM Salon s
                 WHERE (:toSearch IS NULL
                     OR :toSearch = ''
                     OR LOWER(s.name) LIKE LOWER(CONCAT('%', :toSearch, '%'))
-                    OR LOWER(s.city) LIKE LOWER(CONCAT('%', :toSearch, '%'))
-                    OR LOWER(s.cap) LIKE LOWER(CONCAT('%', :toSearch, '%'))
-                    OR LOWER(s.address) LIKE LOWER(CONCAT('%', :toSearch, '%')))
+                )
             """)
-    List<Salon> searchByNameOrAddress(@Param("toSearch") String searchString);
+    List<Salon> searchByName(@Param("toSearch") String searchString);
 
     // cos'è??????????????????????????????????????????????????????????
     @Query("""
@@ -57,8 +53,4 @@ public interface SalonRepositoryJpa extends JpaRepository<Salon, Long> {
             WHERE b.salon.id = :salonId
            """)
     List<Barber> findBarbersBySalonId(@Param("salonId") long salonId);
-
-
-
-
 }
